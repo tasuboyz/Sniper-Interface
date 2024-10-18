@@ -219,16 +219,23 @@
   </div>
 
   <script>
-    let usersToRender = [];
-    
+    // let usersToRender = [];
+
     const urlParams = new URLSearchParams(window.location.search);
     
-    const users = {};
+    const users = [];
     urlParams.forEach((value, key) => {
       if (key.startsWith('user')) {
-        users[key] = value;
+        const user = { name: value, active: true }; // Imposta active su true di default
+        const activeParam = urlParams.get(`active_${value}`);
+        if (activeParam === 'false') {
+          user.active = false; // Imposta active su false se specificato
+        }
+        users.push(user);
       }
     });
+
+    console.log(users);
 
     let settings = {
       theme: 'light'
@@ -338,7 +345,8 @@
           root.style.setProperty('--active-color', '#4CAF50');
           root.style.setProperty('--inactive-color', '#f44336');
       }
-      settings.theme = theme;
+      localStorage.setItem('theme', theme);
+      // settings.theme = theme;
       updateSelectedTheme();
     }
 
@@ -355,18 +363,12 @@
     function sendUsersList() {
       const activeUsers = users.filter(user => user.active).map(user => user.name);
       const inactiveUsers = users.filter(user => !user.active).map(user => user.name);
-      
-      // const message = `
-      //   Utenti Attivi:
-      //   ${activeUsers.join(', ')}
-        
-      //   Utenti Inattivi:
-      //   ${inactiveUsers.join(', ')}
-      // `;
+      const data = {
+        activeUsers: activeUsers,
+        inactiveUsers: inactiveUsers
+      };
       sendData(data);
-      // alert(message);
-      
-      // console.log('Invio lista utenti:', { activeUsers, inactiveUsers });
+      console.log('Invio lista utenti:', { activeUsers, inactiveUsers });
     }
 
     function sendData(data) {
@@ -400,7 +402,7 @@
     sendUsersButton.addEventListener('click', sendUsersList);
 
     renderUsers(users);
-    applyTheme(settings.theme);
+    localStorage.getItem('theme')? applyTheme(localStorage.getItem('theme')) : applyTheme('light');
   </script>
 </body>
 </html>
