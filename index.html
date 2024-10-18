@@ -219,8 +219,10 @@
   </div>
 
   <script>
+    let usersToRender = [];
+    
     const urlParams = new URLSearchParams(window.location.search);
-
+    
     const users = {};
     urlParams.forEach((value, key) => {
       if (key.startsWith('user')) {
