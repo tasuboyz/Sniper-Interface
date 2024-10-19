@@ -1,409 +1,431 @@
 <html><head>
-<title>Lista Utenti</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-<style>
-  :root {
-    --bg-color: #f0f0f0;
-    --container-bg: #ffffff;
-    --text-color: #333;
-    --border-color: #ddd;
-    --hover-color: #f9f9f9;
-    --button-bg: #4CAF50;
-    --button-hover: #45a049;
-    --active-color: #4CAF50;
-    --inactive-color: #f44336;
-  }
-
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: all 0.3s ease;
-  }
-  .container {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: var(--container-bg);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 20px;
-    position: relative;
-  }
-  h1 {
-    text-align: center;
-    color: var(--text-color);
-  }
-  #searchInput {
-    width: calc(100% - 40px);
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 16px;
-    background-color: var(--container-bg);
-    color: var(--text-color);
-  }
-  #userList {
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 10px;
-  }
-  .user-item {
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.3s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-  }
-  .user-item:last-child {
-    border-bottom: none;
-  }
-  .user-item:hover {
-    background-color: var(--hover-color);
-  }
-  .user-status {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 10px;
-  }
-  .user-status.active {
-    background-color: var(--active-color);
-  }
-  .user-status.inactive {
-    background-color: var(--inactive-color);
-  }
-  #newUserInput {
-    width: calc(100% - 80px);
-    padding: 10px;
-    margin-right: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 16px;
-    background-color: var(--container-bg);
-    color: var(--text-color);
-  }
-  button {
-    padding: 10px 15px;
-    background-color: var(--button-bg);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-  }
-  button:hover {
-    background-color: var(--button-hover);
-  }
-  #settingsIcon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 24px;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: color 0.3s;
-  }
-  #settingsIcon:hover {
-    color: var(--button-bg);
-  }
-  #settingsModal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-  }
-  .modal-content {
-    background-color: var(--container-bg);
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid var(--border-color);
-    width: 80%;
-    max-width: 500px;
-    border-radius: 8px;
-    color: var(--text-color);
-  }
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .close:hover,
-  .close:focus {
-    color: var(--text-color);
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .theme-options {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-  }
-  .theme-option {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-  }
-  .theme-option:hover {
-    transform: scale(1.1);
-  }
-  .theme-option.selected {
-    box-shadow: 0 0 0 3px var(--button-bg);
-  }
-  #lightTheme {
-    background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
-  }
-  #darkTheme {
-    background: linear-gradient(135deg, #333333 0%, #555555 100%);
-  }
-  #blueTheme {
-    background: linear-gradient(135deg, #e6f2ff 0%, #0066cc 100%);
-  }
-  #sunsetTheme {
-    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-  }
-  #forestTheme {
-    background: linear-gradient(135deg, #76b852 0%, #8DC26F 100%);
-  }
-  #sendUsersButton {
-    display: block;
-    width: 100%;
-    margin-top: 20px;
-    padding: 15px;
-    font-size: 18px;
-  }
-</style>
-</head>
-<body>
-  <div class="container">
-    <h1>Lista Utenti</h1>
-    <i id="settingsIcon" class="fas fa-cog"></i>
-    <input type="text" id="searchInput" placeholder="Cerca utenti...">
-    <div id="userList"></div>
-    <input type="text" id="newUserInput" placeholder="Digita il nome e premi Invio per aggiungere">
-    <button id="sendUsersButton">Invia Lista Utenti</button>
-  </div>
-
-  <div id="settingsModal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>Impostazioni</h2>
-      <p>Scegli il tema:</p>
-      <div class="theme-options">
-        <div id="lightTheme" class="theme-option" data-theme="light"></div>
-        <div id="darkTheme" class="theme-option" data-theme="dark"></div>
-        <div id="blueTheme" class="theme-option" data-theme="blue"></div>
-        <div id="sunsetTheme" class="theme-option" data-theme="sunset"></div>
-        <div id="forestTheme" class="theme-option" data-theme="forest"></div>
+  <title>Lista Utenti</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #f0f0f0;
+      --container-bg: #ffffff;
+      --text-color: #333;
+      --border-color: #ddd;
+      --hover-color: #f9f9f9;
+      --button-bg: #4CAF50;
+      --button-hover: #45a049;
+      --active-color: #4CAF50;
+      --inactive-color: #f44336;
+    }
+  
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: var(--container-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      position: relative;
+    }
+    h1 {
+      text-align: center;
+      color: var(--text-color);
+    }
+    #searchInput {
+      width: calc(100% - 40px);
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 16px;
+      background-color: var(--container-bg);
+      color: var(--text-color);
+    }
+    #userList {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 10px;
+    }
+    .user-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.3s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .user-item:last-child {
+      border-bottom: none;
+    }
+    .user-item:hover {
+      background-color: var(--hover-color);
+    }
+    .user-status {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 10px;
+    }
+    .user-status.active {
+      background-color: var(--active-color);
+    }
+    .user-status.inactive {
+      background-color: var(--inactive-color);
+    }
+    #newUserInput {
+      width: calc(100% - 80px);
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 16px;
+      background-color: var(--container-bg);
+      color: var(--text-color);
+    }
+    button {
+      padding: 10px 15px;
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: var(--button-hover);
+    }
+    #settingsIcon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    #settingsIcon:hover {
+      color: var(--button-bg);
+    }
+    #settingsModal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: var(--container-bg);
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+      color: var(--text-color);
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: var(--text-color);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .theme-options {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .theme-option {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .theme-option:hover {
+      transform: scale(1.1);
+    }
+    .theme-option.selected {
+      box-shadow: 0 0 0 3px var(--button-bg);
+    }
+    #lightTheme {
+      background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
+    }
+    #darkTheme {
+      background: linear-gradient(135deg, #333333 0%, #555555 100%);
+    }
+    #blueTheme {
+      background: linear-gradient(135deg, #e6f2ff 0%, #0066cc 100%);
+    }
+    #sunsetTheme {
+      background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    }
+    #forestTheme {
+      background: linear-gradient(135deg, #76b852 0%, #8DC26F 100%);
+    }
+    #sendUsersButton {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 15px;
+      font-size: 18px;
+    }
+    .delete-user {
+      margin-left: 10px;
+      color: var(--inactive-color);
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+  
+    .delete-user:hover {
+      color: var(--text-color);
+    }
+  </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Lista Utenti</h1>
+      <i id="settingsIcon" class="fas fa-cog"></i>
+      <input type="text" id="searchInput" placeholder="Cerca utenti...">
+      <div id="userList"></div>
+      <input type="text" id="newUserInput" placeholder="Digita il nome e premi Invio per aggiungere">
+      <button id="sendUsersButton">Invia Lista Utenti</button>
+    </div>
+  
+    <div id="settingsModal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Impostazioni</h2>
+        <p>Scegli il tema:</p>
+        <div class="theme-options">
+          <div id="lightTheme" class="theme-option" data-theme="light"></div>
+          <div id="darkTheme" class="theme-option" data-theme="dark"></div>
+          <div id="blueTheme" class="theme-option" data-theme="blue"></div>
+          <div id="sunsetTheme" class="theme-option" data-theme="sunset"></div>
+          <div id="forestTheme" class="theme-option" data-theme="forest"></div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <script>
-    // let usersToRender = [];
-
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    const users = [];
-    urlParams.forEach((value, key) => {
-      if (key.startsWith('user')) {
-        const user = { name: value, active: true }; // Imposta active su true di default
-        const activeParam = urlParams.get(`active_${value}`);
-        if (activeParam === 'false') {
-          user.active = false; // Imposta active su false se specificato
+  
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      const users = [];
+      urlParams.forEach((value, key) => {
+        if (key.startsWith('user')) {
+          const user = { name: value, active: true };
+          const activeParam = urlParams.get(`active_${value}`);
+          if (activeParam === 'false') {
+            user.active = false;
+          }
+          users.push(user);
         }
-        users.push(user);
-      }
-    });
-
-    console.log(users);
-
-    let settings = {
-      theme: 'light'
-    };
-
-    const userList = document.getElementById('userList');
-    const searchInput = document.getElementById('searchInput');
-    const newUserInput = document.getElementById('newUserInput');
-    const settingsIcon = document.getElementById('settingsIcon');
-    const settingsModal = document.getElementById('settingsModal');
-    const closeBtn = document.getElementsByClassName('close')[0];
-    const themeOptions = document.querySelectorAll('.theme-option');
-    const sendUsersButton = document.getElementById('sendUsersButton');
-
-    function renderUsers(usersToRender) {
-      userList.innerHTML = '';
-      usersToRender.forEach(user => {
-        const userItem = document.createElement('div');
-        userItem.classList.add('user-item');
-        userItem.innerHTML = `
-          <span>${user.name}</span>
-          <span class="user-status ${user.active ? 'active' : 'inactive'}"></span>
-        `;
-        userItem.addEventListener('click', () => toggleUserStatus(user));
-        userList.appendChild(userItem);
       });
-    }
-
-    function toggleUserStatus(user) {
-      user.active = !user.active;
-      renderUsers(users);
-    }
-
-    function filterUsers() {
-      const searchTerm = searchInput.value.toLowerCase();
-      const filteredUsers = users.filter(user => user.name.toLowerCase().includes(searchTerm));
-      renderUsers(filteredUsers);
-    }
-
-    function addUser(e) {
-      if (e.key === 'Enter') {
-        const newUser = newUserInput.value.trim();
-        if (newUser && !users.some(user => user.name === newUser)) {
-          users.push({ name: newUser, active: true });
-          users.sort((a, b) => a.name.localeCompare(b.name));
-          newUserInput.value = '';
+  
+      console.log(users);
+  
+      let settings = {
+        theme: 'light'
+      };
+  
+      const userList = document.getElementById('userList');
+      const searchInput = document.getElementById('searchInput');
+      const newUserInput = document.getElementById('newUserInput');
+      const settingsIcon = document.getElementById('settingsIcon');
+      const settingsModal = document.getElementById('settingsModal');
+      const closeBtn = document.getElementsByClassName('close')[0];
+      const themeOptions = document.querySelectorAll('.theme-option');
+      const sendUsersButton = document.getElementById('sendUsersButton');
+  
+      function renderUsers(usersToRender) {
+        userList.innerHTML = '';
+        usersToRender.forEach(user => {
+          const userItem = document.createElement('div');
+          userItem.classList.add('user-item');
+          userItem.innerHTML = `
+            <span>${user.name}</span>
+            <div>
+              <span class="user-status ${user.active ? 'active' : 'inactive'}"></span>
+              <i class="fas fa-trash delete-user"></i>
+            </div>
+          `;
+          userItem.querySelector('.user-status').addEventListener('click', () => toggleUserStatus(user));
+          userItem.querySelector('.delete-user').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteUser(user);
+          });
+          userList.appendChild(userItem);
+        });
+      }
+  
+      function toggleUserStatus(user) {
+        user.active = !user.active;
+        filterUsers();
+      }
+  
+      function deleteUser(user) {
+        const index = users.findIndex(u => u.name === user.name);
+        if (index !== -1) {
+          users.splice(index, 1);
           filterUsers();
         }
       }
-    }
-
-    function applyTheme(theme) {
-      const root = document.documentElement;
-      switch (theme) {
-        case 'dark':
-          root.style.setProperty('--bg-color', '#333');
-          root.style.setProperty('--container-bg', '#555');
-          root.style.setProperty('--text-color', '#fff');
-          root.style.setProperty('--border-color', '#777');
-          root.style.setProperty('--hover-color', '#666');
-          root.style.setProperty('--button-bg', '#4CAF50');
-          root.style.setProperty('--button-hover', '#45a049');
-          root.style.setProperty('--active-color', '#66bb6a');
-          root.style.setProperty('--inactive-color', '#ef5350');
-          break;
-        case 'blue':
-          root.style.setProperty('--bg-color', '#e6f2ff');
-          root.style.setProperty('--container-bg', '#ffffff');
-          root.style.setProperty('--text-color', '#0066cc');
-          root.style.setProperty('--border-color', '#99ccff');
-          root.style.setProperty('--hover-color', '#f0f8ff');
-          root.style.setProperty('--button-bg', '#0066cc');
-          root.style.setProperty('--button-hover', '#0052a3');
-          root.style.setProperty('--active-color', '#00cc66');
-          root.style.setProperty('--inactive-color', '#ff6666');
-          break;
-        case 'sunset':
-          root.style.setProperty('--bg-color', '#ffecd2');
-          root.style.setProperty('--container-bg', '#ffffff');
-          root.style.setProperty('--text-color', '#4a4a4a');
-          root.style.setProperty('--border-color', '#fcb69f');
-          root.style.setProperty('--hover-color', '#fff0e0');
-          root.style.setProperty('--button-bg', '#ff7e5f');
-          root.style.setProperty('--button-hover', '#ff6b45');
-          root.style.setProperty('--active-color', '#ff6b45');
-          root.style.setProperty('--inactive-color', '#95a5a6');
-          break;
-        case 'forest':
-          root.style.setProperty('--bg-color', '#e8f5e9');
-          root.style.setProperty('--container-bg', '#ffffff');
-          root.style.setProperty('--text-color', '#2e7d32');
-          root.style.setProperty('--border-color', '#a5d6a7');
-          root.style.setProperty('--hover-color', '#f1f8e9');
-          root.style.setProperty('--button-bg', '#4caf50');
-          root.style.setProperty('--button-hover', '#43a047');
-          root.style.setProperty('--active-color', '#66bb6a');
-          root.style.setProperty('--inactive-color', '#bdbdbd');
-          break;
-        default: // light theme
-          root.style.setProperty('--bg-color', '#f0f0f0');
-          root.style.setProperty('--container-bg', '#ffffff');
-          root.style.setProperty('--text-color', '#333');
-          root.style.setProperty('--border-color', '#ddd');
-          root.style.setProperty('--hover-color', '#f9f9f9');
-          root.style.setProperty('--button-bg', '#4CAF50');
-          root.style.setProperty('--button-hover', '#45a049');
-          root.style.setProperty('--active-color', '#4CAF50');
-          root.style.setProperty('--inactive-color', '#f44336');
+  
+      function filterUsers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filteredUsers = users.filter(user => user.name.toLowerCase().includes(searchTerm));
+        renderUsers(filteredUsers);
       }
-      localStorage.setItem('theme', theme);
-      // settings.theme = theme;
-      updateSelectedTheme();
-    }
-
-    function updateSelectedTheme() {
-      themeOptions.forEach(option => {
-        if (option.dataset.theme === settings.theme) {
-          option.classList.add('selected');
-        } else {
-          option.classList.remove('selected');
+  
+      function addUser(e) {
+        if (e.key === 'Enter') {
+          const newUser = newUserInput.value.trim();
+          if (newUser && !users.some(user => user.name === newUser)) {
+            users.push({ name: newUser, active: true });
+            users.sort((a, b) => a.name.localeCompare(b.name));
+            newUserInput.value = '';
+            filterUsers();
+          }
         }
-      });
-    }
-
-    function sendUsersList() {
-      const activeUsers = users.filter(user => user.active).map(user => user.name);
-      const inactiveUsers = users.filter(user => !user.active).map(user => user.name);
-      const data = {
-        activeUsers: activeUsers,
-        inactiveUsers: inactiveUsers
-      };
-      sendData(data);
-      console.log('Invio lista utenti:', { activeUsers, inactiveUsers });
-    }
-
-    function sendData(data) {
-      window.Telegram.WebApp.sendData(JSON.stringify(data));
-    }
-
-    settingsIcon.onclick = function() {
-      settingsModal.style.display = "block";
-      updateSelectedTheme();
-    }
-
-    closeBtn.onclick = function() {
-      settingsModal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-      if (event.target == settingsModal) {
+      }
+  
+      function applyTheme(theme) {
+        const root = document.documentElement;
+        switch (theme) {
+          case 'dark':
+            root.style.setProperty('--bg-color', '#333');
+            root.style.setProperty('--container-bg', '#555');
+            root.style.setProperty('--text-color', '#fff');
+            root.style.setProperty('--border-color', '#777');
+            root.style.setProperty('--hover-color', '#666');
+            root.style.setProperty('--button-bg', '#4CAF50');
+            root.style.setProperty('--button-hover', '#45a049');
+            root.style.setProperty('--active-color', '#66bb6a');
+            root.style.setProperty('--inactive-color', '#ef5350');
+            break;
+          case 'blue':
+            root.style.setProperty('--bg-color', '#e6f2ff');
+            root.style.setProperty('--container-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#0066cc');
+            root.style.setProperty('--border-color', '#99ccff');
+            root.style.setProperty('--hover-color', '#f0f8ff');
+            root.style.setProperty('--button-bg', '#0066cc');
+            root.style.setProperty('--button-hover', '#0052a3');
+            root.style.setProperty('--active-color', '#00cc66');
+            root.style.setProperty('--inactive-color', '#ff6666');
+            break;
+          case 'sunset':
+            root.style.setProperty('--bg-color', '#ffecd2');
+            root.style.setProperty('--container-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#4a4a4a');
+            root.style.setProperty('--border-color', '#fcb69f');
+            root.style.setProperty('--hover-color', '#fff0e0');
+            root.style.setProperty('--button-bg', '#ff7e5f');
+            root.style.setProperty('--button-hover', '#ff6b45');
+            root.style.setProperty('--active-color', '#ff6b45');
+            root.style.setProperty('--inactive-color', '#95a5a6');
+            break;
+          case 'forest':
+            root.style.setProperty('--bg-color', '#e8f5e9');
+            root.style.setProperty('--container-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#2e7d32');
+            root.style.setProperty('--border-color', '#a5d6a7');
+            root.style.setProperty('--hover-color', '#f1f8e9');
+            root.style.setProperty('--button-bg', '#4caf50');
+            root.style.setProperty('--button-hover', '#43a047');
+            root.style.setProperty('--active-color', '#66bb6a');
+            root.style.setProperty('--inactive-color', '#bdbdbd');
+            break;
+          default:
+            root.style.setProperty('--bg-color', '#f0f0f0');
+            root.style.setProperty('--container-bg', '#ffffff');
+            root.style.setProperty('--text-color', '#333');
+            root.style.setProperty('--border-color', '#ddd');
+            root.style.setProperty('--hover-color', '#f9f9f9');
+            root.style.setProperty('--button-bg', '#4CAF50');
+            root.style.setProperty('--button-hover', '#45a049');
+            root.style.setProperty('--active-color', '#4CAF50');
+            root.style.setProperty('--inactive-color', '#f44336');
+        }
+        localStorage.setItem('theme', theme);
+        updateSelectedTheme();
+      }
+  
+      function updateSelectedTheme() {
+        themeOptions.forEach(option => {
+          if (option.dataset.theme === settings.theme) {
+            option.classList.add('selected');
+          } else {
+            option.classList.remove('selected');
+          }
+        });
+      }
+  
+      function sendUsersList() {
+        const activeUsers = users.filter(user => user.active).map(user => user.name);
+        const inactiveUsers = users.filter(user => !user.active).map(user => user.name);
+        const data = {
+          activeUsers: activeUsers,
+          inactiveUsers: inactiveUsers
+        };
+        sendData(data);
+        console.log('Invio lista utenti:', { activeUsers, inactiveUsers });
+      }
+  
+      function sendData(data) {
+        window.Telegram.WebApp.sendData(JSON.stringify(data));
+      }
+  
+      settingsIcon.onclick = function() {
+        settingsModal.style.display = "block";
+        updateSelectedTheme();
+      }
+  
+      closeBtn.onclick = function() {
         settingsModal.style.display = "none";
       }
-    }
-
-    themeOptions.forEach(option => {
-      option.addEventListener('click', function() {
-        applyTheme(this.dataset.theme);
-        settingsModal.style.display = "none";
+  
+      window.onclick = function(event) {
+        if (event.target == settingsModal) {
+          settingsModal.style.display = "none";
+        }
+      }
+  
+      themeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+          applyTheme(this.dataset.theme);
+          settingsModal.style.display = "none";
+        });
       });
-    });
-
-    searchInput.addEventListener('input', filterUsers);
-    newUserInput.addEventListener('keypress', addUser);
-    sendUsersButton.addEventListener('click', sendUsersList);
-
-    renderUsers(users);
-    localStorage.getItem('theme')? applyTheme(localStorage.getItem('theme')) : applyTheme('light');
-  </script>
-</body>
-</html>
+  
+      searchInput.addEventListener('input', filterUsers);
+      newUserInput.addEventListener('keypress', addUser);
+      sendUsersButton.addEventListener('click', sendUsersList);
+  
+      renderUsers(users);
+      localStorage.getItem('theme')? applyTheme(localStorage.getItem('theme')) : applyTheme('light');
+    </script>
+  </body>
+  </html>
